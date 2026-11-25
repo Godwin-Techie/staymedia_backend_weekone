@@ -54,11 +54,3 @@ Visit `http://localhost:3000`.
 ## Technologies Used
 
 Node.js, npm, Express.js, MongoDB Atlas, Mongoose, Postman, Git, GitHub, and MongoDB Compass.
-
-After saving it:
-
-```bash
-git add README.md
-git commit -m "commit message"
-git push
-```
