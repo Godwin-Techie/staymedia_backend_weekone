@@ -35,6 +35,48 @@ app.post("/interns", async (req, res) => {
   }
 });
 
+app.get("/interns/search", async (req, res) => {
+  const name = req.query.name;
+
+  if (typeof name !== "string" || name.trim() === "") {
+    return res.status(400).json({ error: "Provide a name with ?name=..." });
+  }
+
+  try {
+    const escapedName = name.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const interns = await Intern.find({
+      name: { $regex: escapedName, $options: "i" },
+    });
+
+    res.json(interns);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete("/interns/:id", async (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.isValidObjectId(id)) {
+    return res.status(400).json({ error: "Invalid intern ID" });
+  }
+
+  try {
+    const deletedIntern = await Intern.findByIdAndDelete(id);
+
+    if (!deletedIntern) {
+      return res.status(404).json({ error: "Intern not found" });
+    }
+
+    res.json({
+      message: "Intern deleted successfully",
+      intern: deletedIntern,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
 });

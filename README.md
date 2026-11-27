@@ -15,7 +15,7 @@ The root route returns a welcome message. `/interns` returns JSON records from M
 ## What I Built
 
 - A Node.js application using Express.
-- A welcome endpoint and intern collection endpoints.
+- Welcome, list, create, search, and delete API endpoints for interns.
 - A MongoDB Atlas database named `staymedia_practice` with an `interns` collection.
 - A Mongoose model that defines and validates intern documents.
 - Environment-variable configuration with `dotenv`.
@@ -87,24 +87,26 @@ The local server uses port `3000` unless a `PORT` environment variable is set. O
 
 The `Intern` Mongoose model uses the `interns` collection and defines:
 
-| Field | Type | Rules |
-| --- | --- | --- |
-| `name` | String | Required |
-| `role` | String | Required |
-| `department` | String | Defaults to `Engineering` |
-| `email` | String | Optional |
-| `active` | Boolean | Defaults to `true` |
-| `createdAt`, `updatedAt` | Dates | Added by Mongoose timestamps |
+| Field                    | Type    | Rules                        |
+| ------------------------ | ------- | ---------------------------- |
+| `name`                   | String  | Required                     |
+| `role`                   | String  | Required                     |
+| `department`             | String  | Defaults to `Engineering`    |
+| `email`                  | String  | Optional                     |
+| `active`                 | Boolean | Defaults to `true`           |
+| `createdAt`, `updatedAt` | Dates   | Added by Mongoose timestamps |
 
 MongoDB also assigns each document an `_id`.
 
 ## API Reference
 
-| Method | Path | Purpose | Successful response |
-| --- | --- | --- | --- |
-| `GET` | `/` | Welcome message | `200 OK`, text |
-| `GET` | `/interns` | Read all intern documents | `200 OK`, JSON array |
-| `POST` | `/interns` | Create an intern document | `201 Created`, JSON document |
+| Method   | Path                 | Purpose                    | Successful response                    |
+| -------- | -------------------- | -------------------------- | -------------------------------------- |
+| `GET`    | `/`                  | Welcome message            | `200 OK`, text                         |
+| `GET`    | `/interns`           | Read all intern documents  | `200 OK`, JSON array                   |
+| `POST`   | `/interns`           | Create an intern document  | `201 Created`, JSON document           |
+| `GET`    | `/interns/search`    | Search interns by name     | `200 OK`, JSON array of matches        |
+| `DELETE` | `/interns/:id`       | Delete an intern by MongoDB ID | `200 OK`, confirmation and deleted document |
 
 ### Example: list interns
 
@@ -128,7 +130,27 @@ Send `Content-Type: application/json` with a JSON body:
 
 The field names are case-sensitive for validation: use `name`, not `Name`. `active` should be a JSON boolean (`true` or `false`), not a quoted string.
 
-The current implementation responds with `400 Bad Request` when Mongoose cannot create the submitted document and `500 Internal Server Error` if reading records fails.
+### Example: search by name
+
+Searches for a case-insensitive partial match. URL-encode the search value if it contains spaces or special characters.
+
+```http
+GET /interns/search?name=Godwin
+```
+
+The response is a JSON array. It is empty if no records match. A missing or blank `name` query returns `400 Bad Request`.
+
+### Example: delete an intern
+
+Use the MongoDB `_id` from a `GET /interns` response:
+
+```http
+DELETE /interns/PASTE_MONGODB_ID_HERE
+```
+
+The route returns `400 Bad Request` for an invalid ID and `404 Not Found` when no intern has that ID. A successful deletion returns `200 OK` with a confirmation message and the deleted document. Deletion is permanent.
+
+The API also responds with `400 Bad Request` when Mongoose cannot create the submitted document and `500 Internal Server Error` if a database operation fails.
 
 ## Deploying on Render
 
@@ -160,13 +182,8 @@ Review screenshots for credentials, tokens, private URLs, or personal data befor
 - How Node.js, npm, Express, MongoDB, and Mongoose fit together in a backend project.
 - How to create a project with `npm init` and install dependencies.
 - How HTTP `GET` and `POST` requests differ and how to inspect their status codes and bodies in Postman.
+- How to search for interns by a case-insensitive partial name and delete a record by its MongoDB ID.
 - Why request field names and JSON types must match the Mongoose schema.
 - How to keep a database connection string in an ignored `.env` file.
 - How database network allow-lists behave differently for a local computer and a cloud host.
 - How to use Git and GitHub to version and share a project, then deploy it with Render.
-
-## Current Limitations and Next Steps
-
-This is a first learning API, not a production service. It currently has no authentication, authorization, update/delete routes, request validation beyond the Mongoose schema, pagination, automated tests, or centralized error handling. The next improvements are listed in [`docs/portfolio-roadmap.md`](docs/portfolio-roadmap.md).
-
-My learning notes and debugging journey are in [`docs/learning-journey.md`](docs/learning-journey.md).
