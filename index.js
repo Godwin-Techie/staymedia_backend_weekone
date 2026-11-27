@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 require("dotenv").config();
 const mongoose = require("mongoose");
 
@@ -26,13 +26,13 @@ app.get("/interns", async (req, res) => {
   }
 });
 
-app.post('/interns', async (req, res) => {
-try {
-const intern = await Intern.create(req.body);
-res.status(201).json(intern);
-} catch (error) {
-res.status(400).json({ error: error.message });
-}
+app.post("/interns", async (req, res) => {
+  try {
+    const intern = await Intern.create(req.body);
+    res.status(201).json(intern);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
 app.listen(port, () => {
